@@ -8,6 +8,9 @@
 
 void drawPadding(int amount);
 void flashColony(int colonyNum, long mapArray[], int itemCount, colony **colonyList);
+void assignPlayers(int player_count, int players[]);
+int symbolToLord(char *symbol);
+void assignColony(int players[],colony **colonyList,int colonyCount);
 void printItem(long item,char *symbol) { 
 
 int i,m;
@@ -135,7 +138,8 @@ newColony->boundary = 0;
 newColony->colonyName = colonyCount; 
 newColony->lineStart = random() % length; 
 newColony->border = random() % 64;
-newColony->boundary = random() % mapSize;
+newColony->boundary = random() % (mapSize / 4);
+newColony->player= -1;
 for(i = 0; i < colonyCount; ++i) { 
 if(colonyCollision(newColony,colonyList[i])) { 
 newColony->colonyName = -1;
@@ -187,15 +191,18 @@ printf(" ");
 int main(int argc, char **argv) { 
 
 int i,k,m;
+int player_count = atoi(argv[2]); 
 FILE *fp; 
 int userin = 0; 
 long newItem = 0;
+int players[player_count]; 
 colony **colonyList;
 int z = 0; 
 int colonyNum = 0;
 int itemCount = atoi(argv[1]); 
 long mapArray[itemCount];
-srandom(time(NULL)); 
+srandom(time(NULL));
+assignPlayers(player_count,players); 
 for(i = 0; i < itemCount; ++i) { 
 mapArray[i] = initLine();
 }
@@ -206,8 +213,10 @@ printf("\n");
 sleep(2); 
 system("clear");
 colonyList = generateColonies(mapArray,itemCount,&colonyNum);
+assignColony(players,colonyList,colonyNum);
 while(userin != 'q') { 
 printf("%i colonies\n",colonyNum); 
+printf("players: %s %s %s %s\n",factions[players[0]],factions[players[1]],factions[players[2]],factions[players[3]]);
 printf("Enter colony to flash: \n"); 
 userin = getchar(); 
 while(userin < 0x30) { 
@@ -219,6 +228,8 @@ system("clear");
 flashColony(userin,mapArray,itemCount,colonyList);
 printf("Colony Stats:\n");
 printf("size: %li\n",colonyList[userin]->boundary - colonyList[userin]->border); 
+printf("Owned by:%s\n",lords[colonyList[userin]->player]);
+printf("%i\n",colonyList[userin]->player);
 }
 
 //for(z = 0; z < 16; ++z) { 
@@ -247,6 +258,56 @@ printf("\n");
 printf("\nColony %i\n",colonyList[k]->colonyName);
 
 }
+
+int symbolToLord(char *symbol) { 
+int i; 
+for(i=0;i < faction_size; i++) { 
+if(!strcmp(symbol,factions[i])) { 
+return i;
+}
+}
+return -1;
+}
+
+void assignPlayers(int player_count, int players[]) { 
+int i,cand;
+int m;
+int n = 0;
+for(i = 0;i < player_count; ++i){ 
+n = -1;
+while(n == -1) { 
+n = 0;
+cand = random() % faction_size;
+for(m = 0; m < i; ++m) { 
+if (cand == players[m]) { 
+n = -1;
+break; 
+}
+}
+}
+if(n == 0) { 
+players[i] = cand; 
+} 
+}
+}
+
+void assignColony(int players[],colony **colonyList,int colonyCount) { 
+int i,choice; 
+for(i = 0; i < 4; i++) { 
+choice = random() % colonyCount; 
+while(colonyList[choice]->player != -1)
+choice = random() % colonyCount;
+colonyList[choice]->player = players[i];
+}
+for(i = 0; i < colonyCount; ++i) { 
+if(colonyList[i]->player == -1) { 
+colonyList[i]->player = players[random() % 4]; 
+}
+}
+}
+
+
+
 
 
 
