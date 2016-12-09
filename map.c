@@ -7,7 +7,7 @@
 
 
 void drawPadding(int amount);
-void flashColony(int colonyNum, long mapArray[], int itemCount, colony **colonyList);
+void flashColony(int colonyNum,char *symbol,long mapArray[], int itemCount, colony **colonyList);
 void assignPlayers(int player_count, int players[]);
 int symbolToLord(char *symbol);
 void assignColony(int players[],colony **colonyList,int colonyCount);
@@ -140,6 +140,7 @@ newColony->lineStart = random() % length;
 newColony->border = random() % 64;
 newColony->boundary = random() % (mapSize / 4);
 newColony->player= -1;
+newColony->unitBonus = random() % 4; 
 for(i = 0; i < colonyCount; ++i) { 
 if(colonyCollision(newColony,colonyList[i])) { 
 newColony->colonyName = -1;
@@ -225,11 +226,11 @@ userin = getchar();
 printf("%i\n",userin);
 userin -= 0x30;
 system("clear");
-flashColony(userin,mapArray,itemCount,colonyList);
+flashColony(userin,factions[colonyList[userin]->player],mapArray,itemCount,colonyList);
 printf("Colony Stats:\n");
 printf("size: %li\n",colonyList[userin]->boundary - colonyList[userin]->border); 
 printf("Owned by:%s\n",lords[colonyList[userin]->player]);
-printf("%i\n",colonyList[userin]->player);
+printf("Reinforcement Bonus: %i\n",colonyList[userin]->unitBonus);
 }
 
 //for(z = 0; z < 16; ++z) { 
@@ -243,13 +244,13 @@ return 0;
 
 }
 
-void flashColony(int colonyNum, long mapArray[], int itemCount, colony **colonyList)  { 
+void flashColony(int colonyNum, char *symbol,long mapArray[], int itemCount, colony **colonyList)  { 
 
 int k  = colonyNum; 
 int i;
 for(i = 0; i < itemCount; ++i) {
 if(colonyList[k]->lineStart == i) {
-i += printColony(mapArray,"x",colonyList[k]);
+i += printColony(mapArray,symbol,colonyList[k]);
 }
 
 printItem(mapArray[i],".");
